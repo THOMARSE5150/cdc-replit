@@ -4,8 +4,8 @@ import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import memorystore from "memorystore";
 
-// ✅ Correct contact route import
-import contactRoutes from "./server/routes/contact";
+// ✅ Use ESM-compatible path (with .js extension)
+import contactRoutes from "./routes/contact.js";
 
 const MemoryStore = memorystore(session);
 const __filename = fileURLToPath(import.meta.url);
@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 8080;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Session (not required for contact form, but if you use auth/session elsewhere, keep this)
+// ✅ Session config (skip if not needed)
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "change_this_secret",
@@ -28,21 +28,21 @@ app.use(
   })
 );
 
-// ✅ Serve static files (optional, usually handled by Vite frontend or CDN)
-app.use(express.static(join(__dirname, "..", "public")));
+// ✅ Serve static files
+app.use(express.static(join(__dirname, "../public")));
 
-// ✅ API route for contact form
+// ✅ API route
 app.use("/api/contact", contactRoutes);
 
-// ✅ Debug: log all requests (optional but helpful on Railway)
+// ✅ Optional logging
 app.use((req, _res, next) => {
   console.log(`[${req.method}] ${req.url}`);
   next();
 });
 
-// ✅ Fallback route to frontend (can disable if frontend handles 404s via client router)
+// ✅ Fallback for SPA
 app.get("*", (_req, res) => {
-  res.sendFile(join(__dirname, "..", "public", "homepage.html"));
+  res.sendFile(join(__dirname, "../public/homepage.html"));
 });
 
 // ✅ Start server

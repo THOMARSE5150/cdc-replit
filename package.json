@@ -2,9 +2,10 @@
   "name": "rest-express",
   "version": "1.0.0",
   "license": "MIT",
+  "type": "module",
   "scripts": {
     "dev": "NODE_ENV=development tsx server/index.ts",
-    "build": "vite build && esbuild server/index.ts --platform=node --bundle --format=cjs --outfile=dist/server/index.js",
+    "build": "vite build && esbuild server/index.ts --platform=node --bundle --format=esm --outfile=dist/server/index.js",
     "start": "node dist/server/index.js",
     "check": "tsc --noEmit",
     "clean": "rm -rf dist",

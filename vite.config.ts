@@ -1,9 +1,13 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
+import postcssConfig from "./postcss.config.cjs"; // ✅ Import the postcss config explicitly
 
 export default defineConfig({
   plugins: [react()],
+  css: {
+    postcss: postcssConfig, // ✅ Add the postcss config here
+  },
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
