@@ -1,6 +1,6 @@
 import { google, calendar_v3 } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
-import { storage } from '../storage';
+import { storage } from '../storage.js'; // Corrected import path
 
 // Google OAuth2 configuration
 // Hardcoded values for development - in production, these would be securely stored environment variables

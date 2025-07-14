@@ -1,20 +1,15 @@
 import { 
-  bookings, 
   type Booking, 
   type InsertBooking,
-  contacts,
   type Contact,
   type InsertContact,
-  availability,
   type Availability,
   type InsertAvailability,
-  googleTokens,
   type GoogleTokens,
   type InsertGoogleTokens,
-  practiceLocations,
   type PracticeLocation,
   type InsertPracticeLocation
-} from "@shared/schema";
+} from "@shared/schema.js"; // Corrected import path
 
 // Helper function to create a valid PracticeLocation from raw data, providing defaults
 function createLocationFromData(data: Partial<InsertPracticeLocation>): Omit<PracticeLocation, 'id' | 'createdAt' | 'updatedAt'> {

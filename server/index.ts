@@ -5,7 +5,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 
-import contactRoutes from "./routes/contact"; // adjust if multiple routes needed
+import contactRoutes from "./routes/contact.js"; // Corrected import path
 
 dotenv.config();
 
@@ -33,7 +33,7 @@ app.use(
 );
 
 // 🚀 API routes
-app.use("/api/contact", contactRoutes); // adjust if needed
+app.use("/api/contact", contactRoutes);
 
 // ✅ Healthcheck for Railway
 app.get("/health", (_req: Request, res: Response) => {

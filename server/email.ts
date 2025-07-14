@@ -1,5 +1,5 @@
 import { MailService } from '@sendgrid/mail';
-import { Booking } from '@shared/schema';
+import { type Booking } from '@shared/schema.js'; // Corrected import path
 
 // Initialize SendGrid with the API key
 const mailService = new MailService();
@@ -70,7 +70,7 @@ export async function sendContactConfirmation(firstName: string, lastName: strin
       <div style="text-align: center; font-size: 14px; color: #888; margin-top: 30px;">
         <p>If you have any questions, please contact us at:</p>
         <p>Email: hello@celiadunsmorecounselling.com.au | Phone: (03) 9123 4567</p>
-        <p>&copy; ${new Date().getFullYear()} Celia Dunsmore Counselling. All rights reserved.</p>
+        <p>© ${new Date().getFullYear()} Celia Dunsmore Counselling. All rights reserved.</p>
       </div>
     </div>
   `;
@@ -148,7 +148,7 @@ export async function sendBookingConfirmation(booking: Booking): Promise<boolean
       <div style="text-align: center; font-size: 14px; color: #888; margin-top: 30px;">
         <p>If you have any questions, please contact us at:</p>
         <p>Email: hello@celiadunsmorecounselling.com.au | Phone: 0422 804 479</p>
-        <p>&copy; ${new Date().getFullYear()} Celia Dunsmore Counselling. All rights reserved.</p>
+        <p>© ${new Date().getFullYear()} Celia Dunsmore Counselling. All rights reserved.</p>
       </div>
     </div>
   `;

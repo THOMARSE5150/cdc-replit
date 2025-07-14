@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { sendContactConfirmation } from "../services/email";
+import { sendContactConfirmation } from "../services/email.js"; // Corrected import path
 
 const contactRoutes = Router();
 

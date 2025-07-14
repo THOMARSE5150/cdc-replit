@@ -6,7 +6,7 @@
  * requiring actual Google credentials.
  */
 
-import { storage } from '../storage';
+import { storage } from '../storage.js'; // Corrected import path
 import { addDays, format } from 'date-fns';
 
 // Simulated calendar data
