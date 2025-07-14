@@ -10,5 +10,9 @@
     "strict": true,
     "resolveJsonModule": true
   },
-  "include": ["server/**/*.ts"]
+  "include": [
+    "server/**/*.ts",
+    "vite.config.ts",
+    "postcss.config.ts"
+  ]
 }
