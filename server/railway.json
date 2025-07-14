@@ -1,12 +1,17 @@
 {
   "build": {
-    "command": "npm run build",
     "env": {
       "NODE_ENV": "production"
-    }
+    },
+    "command": "npm run build"
+  },
+  "start": {
+    "env": {
+      "PORT": "8080"
+    },
+    "command": "node dist/server/index.js"
   },
   "deploy": {
-    "command": "npm start",
-    "healthcheckPath": "/"
+    "healthcheckPath": "/health"
   }
 }
