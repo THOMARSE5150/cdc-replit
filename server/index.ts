@@ -34,6 +34,11 @@ app.use(express.static(join(__dirname, "../public")));
 // ✅ API route
 app.use("/api/contact", contactRoutes);
 
+// ✅ Healthcheck route for Railway
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
+
 // ✅ Optional logging
 app.use((req, _res, next) => {
   console.log(`[${req.method}] ${req.url}`);
@@ -47,5 +52,5 @@ app.get("*", (_req, res) => {
 
 // ✅ Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
