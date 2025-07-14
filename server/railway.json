@@ -1,15 +1,16 @@
 {
+  "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "env": {
       "NODE_ENV": "production"
     },
-    "command": "npm run build"
+    "command": "npm install"
   },
   "start": {
     "env": {
       "PORT": "8080"
     },
-    "command": "node dist/server/index.js"
+    "command": "ts-node server/index.ts"
   },
   "deploy": {
     "healthcheckPath": "/health"
