@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import PageHeader from "@/components/ui/PageHeader";
-import Breadcrumb from "@/components/ui/Breadcrumb";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { faqItems } from "@/lib/data";
 import {
   Accordion,
