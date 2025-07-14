@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import PageHeader from "@/components/ui/PageHeader";
-import Breadcrumb from "@/components/ui/Breadcrumb";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
 import { services, therapeuticApproaches } from "@/lib/data";
 import { Link, useLocation } from "wouter";
 import { useEffect } from "react";
