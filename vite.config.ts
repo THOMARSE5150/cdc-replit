@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
-import postcssConfig from "./postcss.config.js";
+import postcssConfig from "./postcss.config.js"; // must be JS, not TS
 
 export default defineConfig({
   plugins: [react()],
@@ -17,8 +17,11 @@ export default defineConfig({
   },
   root: path.resolve(__dirname, "client"),
   publicDir: path.resolve(__dirname, "public"),
+  server: {
+    port: 3000,
+  },
   build: {
     outDir: path.resolve(__dirname, "dist/client"),
-    emptyOutDir: false, // ✅ Prevents wiping dist/server
+    emptyOutDir: false, // ✅ prevents wiping dist/server
   },
 });

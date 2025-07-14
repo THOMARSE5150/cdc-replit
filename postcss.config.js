@@ -1,10 +1,6 @@
-import tailwindcss from "tailwindcss";
-import autoprefixer from "autoprefixer";
-
-/** @type {import('postcss').ProcessOptions} */
-export default {
+module.exports = {
   plugins: [
-    tailwindcss,
-    autoprefixer
-  ]
+    require('tailwindcss'),
+    require('autoprefixer'),
+  ],
 };
