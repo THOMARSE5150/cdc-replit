@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { sendContactConfirmation } from "../email"; // ✅ import email sender
+import { sendContactConfirmation } from "../../email"; // ✅ goes up two levels
 
 const contactRoutes = Router();
 
