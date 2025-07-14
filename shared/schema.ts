@@ -119,11 +119,15 @@ export const insertContactSchema = createInsertSchema(contacts).pick({
   privacyConsent: true
 });
 
-export const insertPracticeLocationSchema = createInsertSchema(practiceLocations).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true
-});
+export const insertPracticeLocationSchema = createInsertSchema(practiceLocations)
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true
+  })
+  .extend({
+    isPrimary: z.boolean().optional().nullable()
+  });
 
 export const practiceLocationSchema = z.object({
   id: z.number(),
