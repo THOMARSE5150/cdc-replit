@@ -3,7 +3,7 @@ import session from "express-session";
 import memorystore from "memorystore";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import contactRoutes from "./routes/contact.ts";
+import contactRoutes from "./routes/contact";
 
 const MemoryStore = memorystore(session);
 
