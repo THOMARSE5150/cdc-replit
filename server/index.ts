@@ -5,7 +5,7 @@ import { dirname, join } from "path";
 import memorystore from "memorystore";
 
 // ✅ Correct contact route import
-import contactRoutes from "./routes/contact";
+import contactRoutes from "./server/routes/contact";
 
 const MemoryStore = memorystore(session);
 const __filename = fileURLToPath(import.meta.url);
