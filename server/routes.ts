@@ -617,7 +617,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const tokens = await storage.getGoogleTokens();
       const isMockAuth = tokens && tokens.accessToken === 'mock-access-token';
       
-      if (.isMockAuth) {
+      if (isMockAuth) {
         console.log('Using mock implementation for calendars list');
         const mockCalendars = await googleCalendarImplementations.mock.listCalendars();
         return res.json(mockCalendars);
@@ -736,7 +736,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // AI-powered chat support
   app.post("/api/ai/chat", async (req, res) => {
-    try {.
+    try {
       const { message, context } = req.body;
       const ai = createMentalHealthAI();
       
@@ -809,7 +809,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           name: 'Coburg Solana Psychology',
           displayName: 'Coburg - Solana Psychology Partnership',
           address: 'Solana Psychology, FL 1, 420 Sydney Road, Coburg VIC 3058',
-          description:. 'Partnership location with comprehensive psychology services',
+          description: 'Partnership location with comprehensive psychology services',
           isPrimary: false,
           coordinates: { lat: -37.7401, lng: 144.9631 },
           features: ['First floor with lift access', 'Near Coburg Station', 'Professional psychology centre'],
