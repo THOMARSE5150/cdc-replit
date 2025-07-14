@@ -3,7 +3,7 @@ import PageHeader from "@/components/ui/PageHeader";
 import LocationMapsEnhanced from "@/components/sections/LocationMapsEnhanced";
 import LocalBusinessSchema from "@/components/ui/LocalBusinessSchema";
 import { SEO } from "@/components/ui/SEO";
-import Breadcrumb from "@/components/ui/Breadcrumb";
+import { Breadcrumb } from "@/components/ui/Breadcrumb";
 
 export default function Locations() {
   const locations = [
