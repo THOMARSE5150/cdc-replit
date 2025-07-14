@@ -9,7 +9,7 @@ import {
   type InsertGoogleTokens,
   type PracticeLocation,
   type InsertPracticeLocation
-} from "@shared/schema.js"; // Corrected import path
+} from "../shared/schema.js"; // Corrected to relative path
 
 // Helper function to create a valid PracticeLocation from raw data, providing defaults
 function createLocationFromData(data: Partial<InsertPracticeLocation>): Omit<PracticeLocation, 'id' | 'createdAt' | 'updatedAt'> {
@@ -192,7 +192,7 @@ export class MemStorage implements IStorage {
       email: insertContact.email,
       phone: insertContact.phone,
       enquiryType: insertContact.enquiryType,
-      preferredLocation: insertContact.preferredLocation ?? null,
+      preferredLocation: insertContact.preferredLocation ?? undefined,
       message: insertContact.message,
       urgencyLevel: insertContact.urgencyLevel ?? 1,
       privacyConsent: insertContact.privacyConsent ?? false,
@@ -252,7 +252,7 @@ export class MemStorage implements IStorage {
 
   async setPrimaryLocation(id: number): Promise<boolean> {
     const targetLocation = this.practiceLocations.get(id);
-if (!targetLocation) return false;
+    if (!targetLocation) return false;
 
     this.practiceLocations.forEach((location, key) => {
       this.practiceLocations.set(key, { ...location, isPrimary: false, updatedAt: new Date() });

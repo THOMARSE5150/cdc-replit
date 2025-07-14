@@ -1,5 +1,5 @@
 import { MailService } from '@sendgrid/mail';
-import { type Booking } from '@shared/schema.js'; // Corrected import path
+import { type Booking } from '../../shared/schema.js'; // Corrected to relative path
 
 // Initialize SendGrid with the API key
 const mailService = new MailService();
@@ -188,7 +188,7 @@ export async function sendBookingConfirmation(booking: Booking): Promise<boolean
   });
 }
 
-export async function sendAdminNotification(firstName: string, lastName: string, email: string, message: string): Promise<boolean> {
+export async function sendAdminNotification(firstName: string, lastName:string, email: string, message: string): Promise<boolean> {
   const subject = `New Contact Submission from ${firstName} ${lastName}`;
   const fromEmail = 'hello@celiadunsmorecounselling.com.au';
   const adminEmail = 'hello@celiadunsmorecounselling.com.au'; // ✅ real admin inbox

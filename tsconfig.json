@@ -10,12 +10,7 @@
     "skipLibCheck": true,
     "allowJs": false,
     "jsx": "preserve",
-    "baseUrl": ".",
-    "types": ["node", "vite/client"],
-    "paths": {
-      "@/*": ["client/src/*"],
-      "@shared/*": ["shared/*"]
-    }
+    "types": ["node", "vite/client"]
   },
   "include": ["client/src", "server", "shared"],
   "exclude": ["node_modules", "dist"]
