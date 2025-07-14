@@ -7,12 +7,14 @@ import contactRoutes from "./routes/contact";
 
 const MemoryStore = memorystore(session);
 
-// ⛓ Required for __dirname in ESM
+// ⛑ Required for __dirname in ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+
+// ✅ Use Railway-provided port if available
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8080;
 
 // ✅ Middleware
 app.use(express.json());
@@ -35,7 +37,7 @@ app.use(express.static(path.join(__dirname, "../public")));
 app.use("/api/contact", contactRoutes);
 
 // ✅ Railway healthcheck endpoint
-app.get("/health", (req: Request, res: Response) => {
+app.get("/health", (_req: Request, res: Response) => {
   res.status(200).send("OK");
 });
 
