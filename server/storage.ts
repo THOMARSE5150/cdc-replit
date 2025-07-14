@@ -16,6 +16,31 @@ import {
   type InsertPracticeLocation
 } from "@shared/schema";
 
+// Helper function to create a valid PracticeLocation from raw data, providing defaults
+function createLocationFromData(data: Partial<InsertPracticeLocation>): Omit<PracticeLocation, 'id' | 'createdAt' | 'updatedAt'> {
+  return {
+    locationId: data.locationId!, // Assumes locationId is always present in seed data
+    name: data.name!,             // Assumes name is always present
+    displayName: data.displayName ?? data.name!,
+    address: data.address ?? 'Address not available',
+    description: data.description ?? '',
+    isPrimary: data.isPrimary ?? false,
+    isActive: data.isActive ?? true,
+    coordinates: data.coordinates ?? { lat: 0, lng: 0 },
+    features: data.features ?? [],
+    hours: data.hours ?? {},
+    parking: data.parking ?? null,
+    transport: data.transport ?? [],
+    phone: data.phone ?? null,
+    email: data.email ?? null,
+    contactPersonName: data.contactPersonName ?? null,
+    specialNotes: data.specialNotes ?? null,
+    accessibilityFeatures: data.accessibilityFeatures ?? [],
+    availableServices: data.availableServices ?? [],
+    sortOrder: data.sortOrder ?? 99,
+  };
+}
+
 // Storage interface for our application
 export interface IStorage {
   // Booking methods
@@ -78,7 +103,7 @@ export class MemStorage implements IStorage {
   }
 
   private initializeDefaultLocations() {
-    const defaultLocations = [
+    const defaultLocationsData = [
       {
         locationId: 'brunswick',
         name: 'Brunswick',
@@ -89,19 +114,10 @@ export class MemStorage implements IStorage {
         isActive: true,
         coordinates: { lat: -37.7749, lng: 144.9631 },
         features: ['Ground floor access', 'Tram stop directly outside', 'Street parking available'],
-        hours: {
-          'Monday': '9:00 AM - 5:00 PM',
-          'Tuesday': '9:00 AM - 5:00 PM',
-          'Wednesday': '9:00 AM - 5:00 PM',
-          'Thursday': '9:00 AM - 5:00 PM',
-          'Friday': '9:00 AM - 5:00 PM'
-        },
+        hours: { 'Monday': '9:00 AM - 5:00 PM', 'Tuesday': '9:00 AM - 5:00 PM', 'Wednesday': '9:00 AM - 5:00 PM', 'Thursday': '9:00 AM - 5:00 PM', 'Friday': '9:00 AM - 5:00 PM' },
         parking: 'Street parking available on Sydney Road',
         transport: ['Tram 19', 'Bus 506'],
         phone: '(03) 9041 5031',
-        email: null,
-        contactPersonName: null,
-        specialNotes: null,
         accessibilityFeatures: ['Ground floor access', 'Wide doorways'],
         availableServices: ['Individual counselling', 'Telehealth'],
         sortOrder: 1
@@ -116,20 +132,10 @@ export class MemStorage implements IStorage {
         isActive: true,
         coordinates: { lat: -37.7559, lng: 144.9647 },
         features: ['On-site parking', '8 minute walk from Coburg Station', 'Weekend availability'],
-        hours: {
-          'Monday': '9:00 AM - 5:00 PM',
-          'Tuesday': '9:00 AM - 5:00 PM',
-          'Wednesday': '9:00 AM - 5:00 PM',
-          'Thursday': '9:00 AM - 5:00 PM',
-          'Friday': '9:00 AM - 5:00 PM',
-          'Saturday': '9:00 AM - 1:00 PM'
-        },
+        hours: { 'Monday': '9:00 AM - 5:00 PM', 'Tuesday': '9:00 AM - 5:00 PM', 'Wednesday': '9:00 AM - 5:00 PM', 'Thursday': '9:00 AM - 5:00 PM', 'Friday': '9:00 AM - 5:00 PM', 'Saturday': '9:00 AM - 1:00 PM' },
         parking: 'Free on-site parking available',
         transport: ['Train to Coburg Station', 'Bus 508'],
         phone: '(03) 9041 5031',
-        email: null,
-        contactPersonName: null,
-        specialNotes: null,
         accessibilityFeatures: ['Ground level parking', 'Accessible entrance'],
         availableServices: ['Individual counselling', 'Weekend appointments'],
         sortOrder: 2
@@ -144,31 +150,23 @@ export class MemStorage implements IStorage {
         isActive: true,
         coordinates: { lat: -37.7423, lng: 144.9631 },
         features: ['First floor with lift access', 'Near Coburg Station', 'Professional psychology centre'],
-        hours: {
-          'Monday': '9:00 AM - 5:00 PM',
-          'Tuesday': '9:00 AM - 5:00 PM',
-          'Wednesday': '9:00 AM - 5:00 PM',
-          'Thursday': '9:00 AM - 5:00 PM',
-          'Friday': '9:00 AM - 5:00 PM'
-        },
+        hours: { 'Monday': '9:00 AM - 5:00 PM', 'Tuesday': '9:00 AM - 5:00 PM', 'Wednesday': '9:00 AM - 5:00 PM', 'Thursday': '9:00 AM - 5:00 PM', 'Friday': '9:00 AM - 5:00 PM' },
         parking: 'Limited street parking available',
         transport: ['Train to Coburg Station', 'Tram 19'],
         phone: '(03) 9041 5031',
-        email: null,
-        contactPersonName: null,
-        specialNotes: null,
         accessibilityFeatures: ['Lift access', 'Professional centre'],
         availableServices: ['Individual counselling', 'Specialist referrals'],
         sortOrder: 3
       }
     ];
 
-    defaultLocations.forEach(locationData => {
+    defaultLocationsData.forEach(locationData => {
       const id = this.locationId++;
       const now = new Date();
+      const validatedData = createLocationFromData(locationData);
       const location: PracticeLocation = {
         id,
-        ...locationData,
+        ...validatedData,
         createdAt: now,
         updatedAt: now
       };
@@ -177,25 +175,13 @@ export class MemStorage implements IStorage {
   }
 
   // Booking methods
-  async getAllBookings(): Promise<Booking[]> {
-    return Array.from(this.bookings.values());
-  }
-
-  async getBooking(id: number): Promise<Booking | undefined> {
-    return this.bookings.get(id);
-  }
+  async getAllBookings(): Promise<Booking[]> { return Array.from(this.bookings.values()); }
+  async getBooking(id: number): Promise<Booking | undefined> { return this.bookings.get(id); }
 
   async createBooking(insertBooking: InsertBooking): Promise<Booking> {
     const id = this.bookingId++;
     const createdAt = new Date();
-
-    const booking: Booking = { 
-      ...insertBooking, 
-      id,
-      createdAt,
-      status: "confirmed" 
-    };
-
+    const booking: Booking = { ...insertBooking, id, createdAt, status: "confirmed" };
     this.bookings.set(id, booking);
     return booking;
   }
@@ -204,7 +190,6 @@ export class MemStorage implements IStorage {
   async createContact(insertContact: InsertContact): Promise<Contact> {
     const id = this.contactId++;
     const createdAt = new Date();
-
     const contact: Contact = {
       id,
       firstName: insertContact.firstName,
@@ -212,57 +197,44 @@ export class MemStorage implements IStorage {
       email: insertContact.email,
       phone: insertContact.phone,
       enquiryType: insertContact.enquiryType,
-      preferredLocation: insertContact.preferredLocation || null,
+      preferredLocation: insertContact.preferredLocation ?? null,
       message: insertContact.message,
-      urgencyLevel: insertContact.urgencyLevel || 1,
-      privacyConsent: insertContact.privacyConsent || false,
+      urgencyLevel: insertContact.urgencyLevel ?? 1,
+      privacyConsent: insertContact.privacyConsent ?? false,
       createdAt
     };
-
     this.contacts.set(id, contact);
     return contact;
   }
 
-  async getAllContacts(): Promise<Contact[]> {
-    return Array.from(this.contacts.values());
-  }
-
-  async getContact(id: number): Promise<Contact | undefined> {
-    return this.contacts.get(id);
-  }
+  async getAllContacts(): Promise<Contact[]> { return Array.from(this.contacts.values()); }
+  async getContact(id: number): Promise<Contact | undefined> { return this.contacts.get(id); }
 
   // Practice Location methods
   async getAllPracticeLocations(): Promise<PracticeLocation[]> {
-    return Array.from(this.practiceLocations.values())
-      .sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
+    return Array.from(this.practiceLocations.values()).sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999));
   }
 
   async getActivePracticeLocations(): Promise<PracticeLocation[]> {
-    return Array.from(this.practiceLocations.values())
-      .filter(location => location.isActive)
-      .sort((a, b) => (a.sortOrder || 999) - (b.sortOrder || 999));
+    return Array.from(this.practiceLocations.values()).filter(loc => loc.isActive).sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999));
   }
 
-  async getPracticeLocation(id: number): Promise<PracticeLocation | undefined> {
-    return this.practiceLocations.get(id);
-  }
-
+  async getPracticeLocation(id: number): Promise<PracticeLocation | undefined> { return this.practiceLocations.get(id); }
+  
   async getPracticeLocationByLocationId(locationId: string): Promise<PracticeLocation | undefined> {
-    return Array.from(this.practiceLocations.values())
-      .find(location => location.locationId === locationId);
+    return Array.from(this.practiceLocations.values()).find(loc => loc.locationId === locationId);
   }
 
   async createPracticeLocation(insertLocation: InsertPracticeLocation): Promise<PracticeLocation> {
     const id = this.locationId++;
     const now = new Date();
-    
+    const validatedData = createLocationFromData(insertLocation);
     const location: PracticeLocation = {
       id,
-      ...insertLocation,
+      ...validatedData,
       createdAt: now,
       updatedAt: now
     };
-
     this.practiceLocations.set(id, location);
     return location;
   }
@@ -281,138 +253,72 @@ export class MemStorage implements IStorage {
     return updated;
   }
 
-  async deletePracticeLocation(id: number): Promise<boolean> {
-    return this.practiceLocations.delete(id);
-  }
+  async deletePracticeLocation(id: number): Promise<boolean> { return this.practiceLocations.delete(id); }
 
   async setPrimaryLocation(id: number): Promise<boolean> {
     const targetLocation = this.practiceLocations.get(id);
-    if (!targetLocation) return false;
+if (!targetLocation) return false;
 
-    // Set all locations to non-primary first
-    for (const [locationId, location] of this.practiceLocations.entries()) {
-      this.practiceLocations.set(locationId, {
-        ...location,
-        isPrimary: false,
-        updatedAt: new Date()
-      });
-    }
-
-    // Set the target location as primary
-    this.practiceLocations.set(id, {
-      ...targetLocation,
-      isPrimary: true,
-      updatedAt: new Date()
+    this.practiceLocations.forEach((location, key) => {
+      this.practiceLocations.set(key, { ...location, isPrimary: false, updatedAt: new Date() });
     });
+
+    this.practiceLocations.set(id, { ...targetLocation, isPrimary: true, updatedAt: new Date() });
 
     return true;
   }
 
   // Availability methods
-  async createAvailability(insertAvailability: InsertAvailability): Promise<Availability> {
-    const id = this.availabilityId++;
-    // Ensure proper type structure
-    const availability: Availability = { 
-      id,
-      date: insertAvailability.date,
-      availableSlots: insertAvailability.availableSlots || [],
-      createdAt: insertAvailability.createdAt || new Date(),
-      updatedAt: insertAvailability.updatedAt || new Date()
-    };
-    this.availability.set(id, availability);
-    return availability;
-  }
-
-  async getAllAvailability(): Promise<Availability[]> {
-    return Array.from(this.availability.values());
-  }
-
-  async getAvailability(id: number): Promise<Availability | undefined> {
-    return this.availability.get(id);
-  }
-  
   async upsertAvailability(date: string, slots: string[]): Promise<Availability> {
-    const existingAvailability = Array.from(this.availability.values())
-      .find(a => a.date === date);
-
-    if (existingAvailability) {
-      const updated = {
-        ...existingAvailability,
-        availableSlots: slots,
-        updatedAt: new Date()
-      };
-      this.availability.set(existingAvailability.id, updated);
+    const existing = Array.from(this.availability.values()).find(a => a.date === date);
+    if (existing) {
+      const updated = { ...existing, availableSlots: slots, updatedAt: new Date() };
+      this.availability.set(existing.id, updated);
       return updated;
     }
-
     const id = this.availabilityId++;
-    const newAvailability: Availability = {
-      id,
-      date,
-      availableSlots: slots,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
+    const newAvailability: Availability = { id, date, availableSlots: slots, createdAt: new Date(), updatedAt: new Date() };
     this.availability.set(id, newAvailability);
     return newAvailability;
   }
 
   async getAvailabilityRange(startDate: string, endDate: string): Promise<Availability[]> {
-    return Array.from(this.availability.values())
-      .filter(a => a.date >= startDate && a.date <= endDate);
+    return Array.from(this.availability.values()).filter(a => a.date >= startDate && a.date <= endDate);
   }
 
   async deleteAvailability(date: string): Promise<void> {
-    const availability = Array.from(this.availability.values())
-      .find(a => a.date === date);
-    if (availability) {
-      this.availability.delete(availability.id);
+    const existing = Array.from(this.availability.values()).find(a => a.date === date);
+    if (existing) {
+      this.availability.delete(existing.id);
     }
   }
   
   // Google Calendar methods
-  async saveGoogleTokens(tokens: { 
-    accessToken: string; 
-    refreshToken: string; 
-    expiryDate: number;
-    calendarId?: string 
-  }): Promise<GoogleTokens> {
+  async saveGoogleTokens(tokens: { accessToken: string; refreshToken: string; expiryDate: number; calendarId?: string }): Promise<GoogleTokens> {
     const now = new Date();
-    
     this.googleTokensData = {
       id: 1,
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
-      expiryDate: tokens.expiryDate.toString(), // Store as string
-      calendarId: tokens.calendarId || null,
+      expiryDate: tokens.expiryDate.toString(),
+      calendarId: tokens.calendarId ?? null,
       createdAt: now,
       updatedAt: now
     };
-    
     return this.googleTokensData;
   }
   
-  async getGoogleTokens(): Promise<GoogleTokens | null> {
-    return this.googleTokensData;
-  }
+  async getGoogleTokens(): Promise<GoogleTokens | null> { return this.googleTokensData; }
   
-  async updateGoogleTokens(tokens: { 
-    accessToken: string; 
-    expiryDate: number; 
-    calendarId?: string 
-  }): Promise<GoogleTokens | null> {
-    if (!this.googleTokensData) {
-      return null;
-    }
-    
+  async updateGoogleTokens(tokens: { accessToken: string; expiryDate: number; calendarId?: string }): Promise<GoogleTokens | null> {
+    if (!this.googleTokensData) return null;
     this.googleTokensData = {
       ...this.googleTokensData,
       accessToken: tokens.accessToken,
       expiryDate: tokens.expiryDate.toString(),
-      calendarId: tokens.calendarId || this.googleTokensData.calendarId,
+      calendarId: tokens.calendarId ?? this.googleTokensData.calendarId,
       updatedAt: new Date()
     };
-    
     return this.googleTokensData;
   }
   
