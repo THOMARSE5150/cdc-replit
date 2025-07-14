@@ -1,14 +1,19 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "rootDir": ".",                       // ✅ allow shared/ and server/
     "outDir": "dist/server",
-    "rootDir": "server",
-    "module": "ESNext",
-    "target": "ESNext",
-    "moduleResolution": "Node",
-    "esModuleInterop": true,
     "strict": true,
-    "resolveJsonModule": true
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "types": ["node"],
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["server/**/*.ts", "vite.config.ts", "postcss.config.js"]
+  "include": ["server/**/*", "shared/**/*"],
+  "exclude": ["client", "vite.config.ts", "node_modules", "dist", "**/*.test.ts"]
 }
