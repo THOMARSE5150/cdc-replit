@@ -1,5 +1,5 @@
 import { MailService } from '@sendgrid/mail';
-import { type Booking } from '../../shared/schema.js'; // Corrected to relative path
+import { type Booking } from '../../shared/schema.js'; // Corrected relative path
 
 // Initialize SendGrid with the API key
 const mailService = new MailService();

@@ -2,10 +2,6 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "dist/server",
-    "rootDirs": [
-      "server",
-      "shared"
-    ],
     "types": ["node"]
   },
   "include": [

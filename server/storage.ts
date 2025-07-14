@@ -9,7 +9,7 @@ import {
   type InsertGoogleTokens,
   type PracticeLocation,
   type InsertPracticeLocation
-} from "../shared/schema.js"; // Corrected to relative path
+} from "../shared/schema.js"; // Corrected relative path
 
 // Helper function to create a valid PracticeLocation from raw data, providing defaults
 function createLocationFromData(data: Partial<InsertPracticeLocation>): Omit<PracticeLocation, 'id' | 'createdAt' | 'updatedAt'> {
