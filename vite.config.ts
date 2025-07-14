@@ -1,12 +1,15 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
-import postcssConfig from "./postcss.config.js"; // must be JS, not TS
+import tailwindcss from "tailwindcss";
+import autoprefixer from "autoprefixer";
 
 export default defineConfig({
   plugins: [react()],
   css: {
-    postcss: postcssConfig, // ✅ Explicit postcss config
+    postcss: {
+      plugins: [tailwindcss, autoprefixer],
+    },
   },
   resolve: {
     alias: {
@@ -22,6 +25,6 @@ export default defineConfig({
   },
   build: {
     outDir: path.resolve(__dirname, "dist/client"),
-    emptyOutDir: false, // ✅ prevents wiping dist/server
+    emptyOutDir: false,
   },
 });
