@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import session from "express-session";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 8080;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Session config (skip if not needed)
+// ✅ Session config
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "change_this_secret",
@@ -34,8 +34,8 @@ app.use(express.static(join(__dirname, "../public")));
 // ✅ API route
 app.use("/api/contact", contactRoutes);
 
-// ✅ Healthcheck route for Railway
-app.get("/health", (req, res) => {
+// ✅ Railway Healthcheck route
+app.get("/health", (req: Request, res: Response) => {
   res.status(200).send("OK");
 });
 
@@ -46,7 +46,7 @@ app.use((req, _res, next) => {
 });
 
 // ✅ Fallback for SPA
-app.get("*", (_req, res) => {
+app.get("*", (_req: Request, res: Response) => {
   res.sendFile(join(__dirname, "../public/homepage.html"));
 });
 
