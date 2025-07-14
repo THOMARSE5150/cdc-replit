@@ -5,7 +5,7 @@ import { dirname, join } from "path";
 import memorystore from "memorystore";
 
 // ✅ Use ESM-compatible path (with .js extension)
-import contactRoutes from "./routes/contact.js";
+import contactRoutes from "./routes/contact";
 
 const MemoryStore = memorystore(session);
 const __filename = fileURLToPath(import.meta.url);
