@@ -31,14 +31,19 @@ app.use(
   })
 );
 
+// ✅ Healthcheck route for Railway
+app.get("/health", (_, res) => {
+  res.status(200).send("OK");
+});
+
 // Serve static files from dist
-app.use(express.static(path.join(__dirname, "../dist")));
+app.use(express.static(path.join(__dirname, "../dist/public")));
 
 // Fallback to index.html for SPA
 app.get("*", (_, res) => {
-  res.sendFile(join(__dirname, "../dist/index.html"));
+  res.sendFile(join(__dirname, "../dist/public/index.html"));
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`✅ Server is running on port ${PORT}`);
 });
