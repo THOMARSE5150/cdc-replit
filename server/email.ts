@@ -1,5 +1,5 @@
 import { MailService } from '@sendgrid/mail';
-import { type Booking } from '../../shared/schema.js';
+import { type Booking } from '../storage.js';
 
 // Initialize SendGrid with the API key
 const mailService = new MailService();

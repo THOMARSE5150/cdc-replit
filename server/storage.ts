@@ -1,18 +1,91 @@
-import { 
-  type Booking, 
-  type InsertBooking,
-  type Contact,
-  type InsertContact,
-  type Availability,
-  type InsertAvailability,
-  type GoogleTokens,
-  type InsertGoogleTokens,
-  type PracticeLocation,
-  type InsertPracticeLocation
-} from './shared/schema.js'; // CORRECTED to co-located path
+// MERGED SCHEMA AND STORAGE
+// This file is now the single source of truth for data types and storage.
+
+import { pgTable, serial, text, varchar, boolean, jsonb, integer, timestamp } from 'drizzle-orm/pg-core';
+import { type InferModel } from 'drizzle-orm';
+
+// --- FORMERLY shared/schema.ts ---
+export const bookings = pgTable('bookings', {
+  id: serial('id').primaryKey(),
+  date: varchar('date', { length: 255 }).notNull(),
+  time: varchar('time', { length: 255 }).notNull(),
+  client: jsonb('client').notNull(),
+  service: jsonb('service').notNull(),
+  status: varchar('status', { length: 50 }).default('confirmed'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+export type Booking = InferModel<typeof bookings>;
+export type InsertBooking = InferModel<typeof bookings, 'insert'>;
+
+export const contacts = pgTable('contacts', {
+    id: serial('id').primaryKey(),
+    firstName: varchar('first_name', { length: 255 }).notNull(),
+    lastName: varchar('last_name', { length: 255 }).notNull(),
+    email: varchar('email', { length: 255 }).notNull(),
+    phone: varchar('phone', { length: 50 }),
+    enquiryType: varchar('enquiry_type', { length: 100 }).notNull(),
+    preferredLocation: varchar('preferred_location', { length: 100 }),
+    message: text('message').notNull(),
+    urgencyLevel: integer('urgency_level').default(1),
+    privacyConsent: boolean('privacy_consent').default(false).notNull(),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+export type Contact = InferModel<typeof contacts>;
+export type InsertContact = InferModel<typeof contacts, 'insert'>;
+
+export const practiceLocations = pgTable('practice_locations', {
+    id: serial('id').primaryKey(),
+    locationId: varchar('location_id', { length: 100 }).notNull().unique(),
+    name: varchar('name', { length: 255 }).notNull(),
+    displayName: varchar('display_name', { length: 255 }),
+    address: varchar('address', { length: 255 }).notNull(),
+    description: text('description'),
+    isPrimary: boolean('is_primary').default(false),
+    isActive: boolean('is_active').default(true),
+    coordinates: jsonb('coordinates'),
+    features: jsonb('features'),
+    hours: jsonb('hours'),
+    parking: text('parking'),
+    transport: jsonb('transport'),
+    phone: varchar('phone', { length: 50 }),
+    email: varchar('email', { length: 255 }),
+    contactPersonName: varchar('contact_person_name', { length: 255 }),
+    specialNotes: text('special_notes'),
+    accessibilityFeatures: jsonb('accessibility_features'),
+    availableServices: jsonb('available_services'),
+    sortOrder: integer('sort_order'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+});
+export type PracticeLocation = InferModel<typeof practiceLocations>;
+export type InsertPracticeLocation = InferModel<typeof practiceLocations, 'insert'>;
+
+export const availability = pgTable('availability', {
+    id: serial('id').primaryKey(),
+    date: varchar('date', { length: 255 }).notNull().unique(),
+    availableSlots: jsonb('available_slots').notNull(),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+});
+export type Availability = InferModel<typeof availability>;
+export type InsertAvailability = InferModel<typeof availability, 'insert'>;
+
+export const googleTokens = pgTable('google_tokens', {
+    id: serial('id').primaryKey(),
+    accessToken: text('access_token').notNull(),
+    refreshToken: text('refresh_token').notNull(),
+    expiryDate: varchar('expiry_date', { length: 255 }).notNull(),
+    calendarId: varchar('calendar_id', { length: 255 }),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+});
+export type GoogleTokens = InferModel<typeof googleTokens>;
+export type InsertGoogleTokens = InferModel<typeof googleTokens, 'insert'>;
+
+
+// --- FORMERLY server/storage.ts ---
 
 // Helper function to create a valid PracticeLocation from raw data, providing defaults
-// This function fixes the type errors related to 'hours' and 'features'
 function createLocationFromData(data: Partial<InsertPracticeLocation>): Omit<PracticeLocation, 'id' | 'createdAt' | 'updatedAt'> {
   const hours: { [key: string]: string } = {};
   if (data.hours) {
@@ -48,22 +121,15 @@ function createLocationFromData(data: Partial<InsertPracticeLocation>): Omit<Pra
 
 // Storage interface for our application
 export interface IStorage {
-  // Booking methods
   getAllBookings(): Promise<Booking[]>;
   getBooking(id: number): Promise<Booking | undefined>;
   createBooking(booking: InsertBooking): Promise<Booking>;
-
-  // Contact methods
   createContact(contact: InsertContact): Promise<Contact>;
   getAllContacts(): Promise<Contact[]>;
   getContact(id: number): Promise<Contact | undefined>;
-
-  // Availability methods
   upsertAvailability(date: string, slots: string[]): Promise<Availability>;
   getAvailabilityRange(startDate: string, endDate: string): Promise<Availability[]>;
   deleteAvailability(date: string): Promise<void>;
-
-  // Practice Location methods
   getAllPracticeLocations(): Promise<PracticeLocation[]>;
   getActivePracticeLocations(): Promise<PracticeLocation[]>;
   getPracticeLocation(id: number): Promise<PracticeLocation | undefined>;
@@ -72,8 +138,6 @@ export interface IStorage {
   updatePracticeLocation(id: number, location: Partial<InsertPracticeLocation>): Promise<PracticeLocation | undefined>;
   deletePracticeLocation(id: number): Promise<boolean>;
   setPrimaryLocation(id: number): Promise<boolean>;
-
-  // Google Calendar methods
   saveGoogleTokens(tokens: { accessToken: string; refreshToken: string; expiryDate: number; calendarId?: string }): Promise<GoogleTokens>;
   getGoogleTokens(): Promise<GoogleTokens | null>;
   updateGoogleTokens(tokens: { accessToken: string; expiryDate: number; calendarId?: string }): Promise<GoogleTokens | null>;
