@@ -1,19 +1,23 @@
 import express, { Request, Response } from "express";
 import session from "express-session";
-import memorystore from "memorystore";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import contactRoutes from "./routes/contact";
+import memoryStore from "memorystore";
+import path from "path";
+import { fileURLToPath } from "url";
+import dotenv from "dotenv";
 
-const MemoryStore = memorystore(session);
+import contactRoutes from './routes/contact.js'; // The new contact route
 
-// ⛑ Required for __dirname in ESM
+dotenv.config();
+
+const MemoryStore = memoryStore(session);
+
+// Required for __dirname in ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// ✅ Use Railway-provided port if available
+// Use Railway-provided port if available
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8080;
 
 // ✅ Middleware
@@ -31,9 +35,9 @@ app.use(
 );
 
 // ✅ Static files
-app.use(express.static(path.join(__dirname, "../public")));
+app.use(express.static(path.join(__dirname, "../../public")));
 
-// ✅ API route
+// ✅ API route for the new contact form
 app.use("/api/contact", contactRoutes);
 
 // ✅ Railway healthcheck endpoint
@@ -49,7 +53,7 @@ app.use((req, _res, next) => {
 
 // ✅ SPA fallback
 app.get("*", (_req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, "../public/homepage.html"));
+  res.sendFile(path.join(__dirname, "../../public/homepage.html"));
 });
 
 // ✅ Start server
