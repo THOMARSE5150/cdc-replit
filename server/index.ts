@@ -1,24 +1,18 @@
-import express, { Request, Response } from "express";
-import session from "express-session";
-import memoryStore from "memorystore";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import dotenv from "dotenv";
-
-// Corrected import for the new contact route
+import express from 'express';
+import session from 'express-session';
+import memoryStore from 'memorystore';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import contactRoutes from './routes/contact.js';
 
-dotenv.config();
-
-const MemoryStore = memorystore(session);
-
-// Required for __dirname in ESM
+// ES module __dirname setup
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+const MemoryStore = memoryStore(session);
 
-// Use Railway-provided port if available
+// Use Railway-provided port if available, otherwise default to 8080
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8080;
 
 // Middleware
@@ -36,29 +30,20 @@ app.use(
 );
 
 // Static files (This path is for a production build)
-const clientDistPath = path.resolve(__dirname, "../../client/dist");
+// It correctly points from `dist/server/` to `dist/client/`
+const clientDistPath = path.resolve(__dirname, '../client');
 app.use(express.static(clientDistPath));
 
-// API route
+// API routes
 app.use("/api/contact", contactRoutes);
 
-// Railway healthcheck endpoint
-app.get("/health", (_req: Request, res: Response) => {
-  res.status(200).send("OK");
+// Catch-all route to serve the React app
+// This is essential for client-side routing to work in production
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(clientDistPath, 'index.html'));
 });
 
-// Logging (optional)
-app.use((req, _res, next) => {
-  console.log(`[${req.method}] ${req.url}`);
-  next();
-});
-
-// SPA fallback (This path is for a production build)
-app.get("*", (_req: Request, res: Response) => {
-  res.sendFile(path.join(clientDistPath, "index.html"));
-});
-
-// Start server
+// Start the server
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`Server is listening on port ${PORT}`);
 });
