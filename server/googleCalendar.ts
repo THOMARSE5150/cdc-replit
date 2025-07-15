@@ -1,6 +1,6 @@
 import { google, calendar_v3 } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
-import { storage } from '../storage.js'; // Corrected import path
+import { storage } from './storage.js'; // CORRECTED to a flat ./ path
 
 // Google OAuth2 configuration
 // Hardcoded values for development - in production, these would be securely stored environment variables
@@ -16,29 +16,28 @@ console.log('GOOGLE_CLIENT_SECRET present:', !!GOOGLE_CLIENT_SECRET);
 
 // Get hostname dynamically from Replit environment
 const getHostname = () => {
+  if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+    return `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
+  }
   // For debugging environment variables
   console.log('REPL_SLUG:', process.env.REPL_SLUG);
   console.log('REPL_OWNER:', process.env.REPL_OWNER);
   console.log('REPLIT_DOMAINS:', process.env.REPLIT_DOMAINS);
-  console.log('REPLIT_DB_URL:', process.env.REPLIT_DB_URL);
   
-  // First try to use REPLIT_DOMAINS which is the most reliable in new Replit
   if (process.env.REPLIT_DOMAINS) {
     const url = `https://${process.env.REPLIT_DOMAINS}`;
     console.log('Using REPLIT_DOMAINS URL:', url);
     return url;
   }
   
-  // Fallback to traditional Replit URL format
   if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
     const url = `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`;
     console.log('Using Replit Owner/Slug URL:', url);
     return url;
   }
   
-  // Fallback to localhost if not in Replit environment
   console.log('Using localhost URL');
-  return 'http://localhost:5000';
+  return 'http://localhost:8080';
 };
 
 const REDIRECT_URI = `${getHostname()}/api/google/oauth/callback`;
@@ -212,35 +211,30 @@ export async function getAvailableTimeSlots(
   calendarId: string,
   date: Date
 ): Promise<string[] | null> {
-  // Set the time range for the day
   const startOfDay = new Date(date);
   startOfDay.setHours(0, 0, 0, 0);
   
   const endOfDay = new Date(date);
   endOfDay.setHours(23, 59, 59, 999);
   
-  // Get events for the day
   const events = await listEvents(calendarId, startOfDay, endOfDay);
   
   if (!events) {
     return null;
   }
   
-  // Define all potential time slots (9am-5pm, hourly slots)
   const allTimeSlots: string[] = [];
   for (let hour = 9; hour < 17; hour++) {
     allTimeSlots.push(`${hour}:00`);
   }
   
-  // Filter out slots that overlap with events
   const busySlots = events
-    .filter(event => !event.transparency || event.transparency !== 'transparent') // Exclude "free" events
+    .filter(event => !event.transparency || event.transparency !== 'transparent')
     .map(event => {
       const start = new Date(event.start?.dateTime || '');
       return `${start.getHours()}:00`;
     });
   
-  // Return available slots
   return allTimeSlots.filter(slot => !busySlots.includes(slot));
 }
 
@@ -250,22 +244,16 @@ export async function syncCalendarAvailability(
   startDate: Date,
   endDate: Date
 ): Promise<boolean> {
-  // Process one day at a time
   const currentDate = new Date(startDate);
   
   while (currentDate <= endDate) {
-    // Get available slots from Google Calendar
     const availableSlots = await getAvailableTimeSlots(calendarId, currentDate);
     
     if (availableSlots) {
-      // Format the date as 'YYYY-MM-DD'
       const dateString = currentDate.toISOString().split('T')[0];
-      
-      // Update availability in storage
       await storage.upsertAvailability(dateString, availableSlots);
     }
     
-    // Move to next day
     currentDate.setDate(currentDate.getDate() + 1);
   }
   

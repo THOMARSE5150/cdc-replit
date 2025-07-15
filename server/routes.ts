@@ -1,14 +1,14 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage, insertBookingSchema, insertContactSchema, type Contact } from "../storage.js";
+import { storage, insertBookingSchema, insertContactSchema, type Contact, type PracticeLocation } from "./storage.js";
 import { z } from "zod";
-import { sendBookingConfirmation, sendContactConfirmation } from "../email.js";
-import { createMentalHealthAI } from "../ai/mentalHealthAI.js";
+import { sendBookingConfirmation, sendContactConfirmation } from "./email.js";
+import { createMentalHealthAI } from "./mentalHealthAI.js";
 import path from "path";
 import fs from "fs";
 // Import both real and mock Google Calendar implementations
-import * as realGoogleCalendar from "../services/googleCalendar.js";
-import * as mockGoogleCalendar from "../services/mockGoogleCalendar.js";
+import * as realGoogleCalendar from "./googleCalendar.js";
+import * as mockGoogleCalendar from "./mockGoogleCalendar.js";
 
 // By default, use the real implementation
 const googleCalendar = realGoogleCalendar;
