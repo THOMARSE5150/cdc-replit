@@ -19,13 +19,13 @@ contactRoutes.post("/", async (req: Request, res: Response) => {
     }
     
     if (!apiKey) {
-      throw new Error("Server is not configured to send email.");
+        throw new Error("Server is not configured for email.");
     }
 
     const [firstName = "", ...rest] = name.split(" ");
     const lastName = rest.join(" ") || "(no last name)";
     
-    const adminEmail = 'YOUR_ACTUAL_ADMIN_EMAIL@DOMAIN.COM'; // <<< CHANGE THIS
+    const adminEmail = 'hello@celiadunsmorecounselling.com.au'; // <<< CHANGE THIS
     const fromEmail = 'hello@celiadunsmorecounselling.com.au';
     const adminSubject = `New Contact Form Submission from ${firstName} ${lastName}`;
     const adminText = `Name: ${firstName} ${lastName}\nEmail: ${email}\nMessage: ${message}`;
@@ -33,7 +33,7 @@ contactRoutes.post("/", async (req: Request, res: Response) => {
     await mailService.send({ to: adminEmail, from: fromEmail, subject: adminSubject, text: adminText });
 
     const clientSubject = `We've Received Your Message`;
-    const clientHtml = `<p>Dear ${firstName}, thank you for your message. I will get back to you shortly.</p>`;
+    const clientHtml = `<p>Dear ${firstName}, thank you for your message. I will get back to you as soon as possible.</p>`;
     await mailService.send({ to: email, from: fromEmail, subject: clientSubject, html: clientHtml });
     
     res.status(200).json({ message: "Message sent successfully!" });
