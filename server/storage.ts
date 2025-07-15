@@ -9,10 +9,20 @@ import {
   type InsertGoogleTokens,
   type PracticeLocation,
   type InsertPracticeLocation
-} from "../shared/schema.js"; // Corrected relative path
+} from "../shared/schema.js"; // CORRECTED to relative path
 
 // Helper function to create a valid PracticeLocation from raw data, providing defaults
+// This function fixes the type errors related to 'hours' and 'features'
 function createLocationFromData(data: Partial<InsertPracticeLocation>): Omit<PracticeLocation, 'id' | 'createdAt' | 'updatedAt'> {
+  const hours: { [key: string]: string } = {};
+  if (data.hours) {
+    for (const [day, time] of Object.entries(data.hours)) {
+      if (typeof time === 'string') {
+        hours[day] = time;
+      }
+    }
+  }
+
   return {
     locationId: data.locationId!, // Assumes locationId is always present in seed data
     name: data.name!,             // Assumes name is always present
@@ -22,8 +32,8 @@ function createLocationFromData(data: Partial<InsertPracticeLocation>): Omit<Pra
     isPrimary: data.isPrimary ?? false,
     isActive: data.isActive ?? true,
     coordinates: data.coordinates ?? { lat: 0, lng: 0 },
-    features: data.features ?? [],
-    hours: data.hours ?? {},
+    features: (data.features ?? []).map(String), // Ensures features is a string array
+    hours: hours, // Uses the correctly typed hours object
     parking: data.parking ?? null,
     transport: data.transport ?? [],
     phone: data.phone ?? null,
@@ -72,28 +82,17 @@ export interface IStorage {
 
 // In-memory implementation of the storage interface
 export class MemStorage implements IStorage {
-  private bookings: Map<number, Booking>;
-  private contacts: Map<number, Contact>;
-  private practiceLocations: Map<number, PracticeLocation>;
-  private bookingId: number;
-  private contactId: number;
-  private locationId: number;
-  private availabilityId: number;
-  private availability: Map<number, Availability>;
-  private googleTokensData: GoogleTokens | null;
+  private bookings: Map<number, Booking> = new Map();
+  private contacts: Map<number, Contact> = new Map();
+  private practiceLocations: Map<number, PracticeLocation> = new Map();
+  private bookingId: number = 1;
+  private contactId: number = 1;
+  private locationId: number = 1;
+  private availabilityId: number = 1;
+  private availability: Map<number, Availability> = new Map();
+  private googleTokensData: GoogleTokens | null = null;
 
   constructor() {
-    this.bookings = new Map();
-    this.contacts = new Map();
-    this.practiceLocations = new Map();
-    this.bookingId = 1;
-    this.contactId = 1;
-    this.locationId = 1;
-    this.availabilityId = 1;
-    this.availability = new Map();
-    this.googleTokensData = null;
-    
-    // Initialize with the existing locations
     this.initializeDefaultLocations();
   }
 
@@ -169,7 +168,6 @@ export class MemStorage implements IStorage {
     });
   }
 
-  // Booking methods
   async getAllBookings(): Promise<Booking[]> { return Array.from(this.bookings.values()); }
   async getBooking(id: number): Promise<Booking | undefined> { return this.bookings.get(id); }
 
@@ -181,7 +179,6 @@ export class MemStorage implements IStorage {
     return booking;
   }
 
-  // Contact methods
   async createContact(insertContact: InsertContact): Promise<Contact> {
     const id = this.contactId++;
     const createdAt = new Date();
@@ -205,7 +202,6 @@ export class MemStorage implements IStorage {
   async getAllContacts(): Promise<Contact[]> { return Array.from(this.contacts.values()); }
   async getContact(id: number): Promise<Contact | undefined> { return this.contacts.get(id); }
 
-  // Practice Location methods
   async getAllPracticeLocations(): Promise<PracticeLocation[]> {
     return Array.from(this.practiceLocations.values()).sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999));
   }
@@ -263,7 +259,6 @@ export class MemStorage implements IStorage {
     return true;
   }
 
-  // Availability methods
   async upsertAvailability(date: string, slots: string[]): Promise<Availability> {
     const existing = Array.from(this.availability.values()).find(a => a.date === date);
     if (existing) {
@@ -288,7 +283,6 @@ export class MemStorage implements IStorage {
     }
   }
   
-  // Google Calendar methods
   async saveGoogleTokens(tokens: { accessToken: string; refreshToken: string; expiryDate: number; calendarId?: string }): Promise<GoogleTokens> {
     const now = new Date();
     this.googleTokensData = {
@@ -323,5 +317,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-// Export a singleton instance of the storage
 export const storage = new MemStorage();
