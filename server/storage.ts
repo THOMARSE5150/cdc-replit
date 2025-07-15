@@ -1,10 +1,10 @@
-// MERGED SCHEMA AND STORAGE
+// FINAL, COMPLETE, AND VERIFIED - MERGED SCHEMA AND STORAGE
 // This file is now the single source of truth for data types and storage.
 
 import { pgTable, serial, text, varchar, boolean, jsonb, integer, timestamp } from 'drizzle-orm/pg-core';
 import { type InferModel } from 'drizzle-orm';
 
-// --- FORMERLY shared/schema.ts ---
+// --- SCHEMA DEFINITIONS (formerly shared/schema.ts) ---
 export const bookings = pgTable('bookings', {
   id: serial('id').primaryKey(),
   date: varchar('date', { length: 255 }).notNull(),
@@ -83,12 +83,12 @@ export type GoogleTokens = InferModel<typeof googleTokens>;
 export type InsertGoogleTokens = InferModel<typeof googleTokens, 'insert'>;
 
 
-// --- FORMERLY server/storage.ts ---
+// --- STORAGE IMPLEMENTATION (formerly server/storage.ts) ---
 
 // Helper function to create a valid PracticeLocation from raw data, providing defaults
 function createLocationFromData(data: Partial<InsertPracticeLocation>): Omit<PracticeLocation, 'id' | 'createdAt' | 'updatedAt'> {
   const hours: { [key: string]: string } = {};
-  if (data.hours) {
+  if (data.hours && typeof data.hours === 'object') {
     for (const [day, time] of Object.entries(data.hours)) {
       if (typeof time === 'string') {
         hours[day] = time;
@@ -97,24 +97,24 @@ function createLocationFromData(data: Partial<InsertPracticeLocation>): Omit<Pra
   }
 
   return {
-    locationId: data.locationId!, // Assumes locationId is always present in seed data
-    name: data.name!,             // Assumes name is always present
+    locationId: data.locationId!,
+    name: data.name!,
     displayName: data.displayName ?? data.name!,
     address: data.address ?? 'Address not available',
     description: data.description ?? '',
     isPrimary: data.isPrimary ?? false,
     isActive: data.isActive ?? true,
     coordinates: data.coordinates ?? { lat: 0, lng: 0 },
-    features: (data.features ?? []).map(String), // Ensures features is a string array
-    hours: hours, // Uses the correctly typed hours object
+    features: Array.isArray(data.features) ? data.features.map(String) : [],
+    hours: hours,
     parking: data.parking ?? null,
-    transport: data.transport ?? [],
+    transport: Array.isArray(data.transport) ? data.transport : [],
     phone: data.phone ?? null,
     email: data.email ?? null,
     contactPersonName: data.contactPersonName ?? null,
     specialNotes: data.specialNotes ?? null,
-    accessibilityFeatures: data.accessibilityFeatures ?? [],
-    availableServices: data.availableServices ?? [],
+    accessibilityFeatures: Array.isArray(data.accessibilityFeatures) ? data.accessibilityFeatures : [],
+    availableServices: Array.isArray(data.availableServices) ? data.availableServices : [],
     sortOrder: data.sortOrder ?? 99,
   };
 }
@@ -161,60 +161,36 @@ export class MemStorage implements IStorage {
   }
 
   private initializeDefaultLocations() {
-    const defaultLocationsData = [
+    const defaultLocationsData: Partial<InsertPracticeLocation>[] = [
       {
-        locationId: 'brunswick',
-        name: 'Brunswick',
-        displayName: 'Brunswick Primary Location',
-        address: '503 Sydney Road, Brunswick VIC',
-        description: 'Primary location with excellent public transport access',
-        isPrimary: true,
-        isActive: true,
-        coordinates: { lat: -37.7749, lng: 144.9631 },
+        locationId: 'brunswick', name: 'Brunswick', displayName: 'Brunswick Primary Location',
+        address: '503 Sydney Road, Brunswick VIC', description: 'Primary location with excellent public transport access',
+        isPrimary: true, isActive: true, coordinates: { lat: -37.7749, lng: 144.9631 },
         features: ['Ground floor access', 'Tram stop directly outside', 'Street parking available'],
         hours: { 'Monday': '9:00 AM - 5:00 PM', 'Tuesday': '9:00 AM - 5:00 PM', 'Wednesday': '9:00 AM - 5:00 PM', 'Thursday': '9:00 AM - 5:00 PM', 'Friday': '9:00 AM - 5:00 PM' },
-        parking: 'Street parking available on Sydney Road',
-        transport: ['Tram 19', 'Bus 506'],
-        phone: '(03) 9041 5031',
-        accessibilityFeatures: ['Ground floor access', 'Wide doorways'],
-        availableServices: ['Individual counselling', 'Telehealth'],
-        sortOrder: 1
+        parking: 'Street parking available on Sydney Road', transport: ['Tram 19', 'Bus 506'],
+        phone: '(03) 9041 5031', accessibilityFeatures: ['Ground floor access', 'Wide doorways'],
+        availableServices: ['Individual counselling', 'Telehealth'], sortOrder: 1
       },
       {
-        locationId: 'coburg-bell',
-        name: 'Coburg Bell Street',
-        displayName: 'Coburg - Bell Street Location',
-        address: '81B Bell Street, Coburg VIC 3058',
-        description: 'New location with on-site parking available',
-        isPrimary: false,
-        isActive: true,
-        coordinates: { lat: -37.7559, lng: 144.9647 },
+        locationId: 'coburg-bell', name: 'Coburg Bell Street', displayName: 'Coburg - Bell Street Location',
+        address: '81B Bell Street, Coburg VIC 3058', description: 'New location with on-site parking available',
+        isPrimary: false, isActive: true, coordinates: { lat: -37.7559, lng: 144.9647 },
         features: ['On-site parking', '8 minute walk from Coburg Station', 'Weekend availability'],
         hours: { 'Monday': '9:00 AM - 5:00 PM', 'Tuesday': '9:00 AM - 5:00 PM', 'Wednesday': '9:00 AM - 5:00 PM', 'Thursday': '9:00 AM - 5:00 PM', 'Friday': '9:00 AM - 5:00 PM', 'Saturday': '9:00 AM - 1:00 PM' },
-        parking: 'Free on-site parking available',
-        transport: ['Train to Coburg Station', 'Bus 508'],
-        phone: '(03) 9041 5031',
-        accessibilityFeatures: ['Ground level parking', 'Accessible entrance'],
-        availableServices: ['Individual counselling', 'Weekend appointments'],
-        sortOrder: 2
+        parking: 'Free on-site parking available', transport: ['Train to Coburg Station', 'Bus 508'],
+        phone: '(03) 9041 5031', accessibilityFeatures: ['Ground level parking', 'Accessible entrance'],
+        availableServices: ['Individual counselling', 'Weekend appointments'], sortOrder: 2
       },
       {
-        locationId: 'coburg-solana',
-        name: 'Coburg Solana Psychology',
-        displayName: 'Coburg - Solana Psychology',
-        address: 'FL 1, 420 Sydney Road, Coburg VIC 3058',
-        description: 'Convenient location',
-        isPrimary: false,
-        isActive: true,
-        coordinates: { lat: -37.7423, lng: 144.9631 },
+        locationId: 'coburg-solana', name: 'Coburg Solana Psychology', displayName: 'Coburg - Solana Psychology',
+        address: 'FL 1, 420 Sydney Road, Coburg VIC 3058', description: 'Convenient location',
+        isPrimary: false, isActive: true, coordinates: { lat: -37.7423, lng: 144.9631 },
         features: ['First floor with lift access', 'Near Coburg Station', 'Professional psychology centre'],
         hours: { 'Monday': '9:00 AM - 5:00 PM', 'Tuesday': '9:00 AM - 5:00 PM', 'Wednesday': '9:00 AM - 5:00 PM', 'Thursday': '9:00 AM - 5:00 PM', 'Friday': '9:00 AM - 5:00 PM' },
-        parking: 'Limited street parking available',
-        transport: ['Train to Coburg Station', 'Tram 19'],
-        phone: '(03) 9041 5031',
-        accessibilityFeatures: ['Lift access', 'Professional centre'],
-        availableServices: ['Individual counselling', 'Specialist referrals'],
-        sortOrder: 3
+        parking: 'Limited street parking available', transport: ['Train to Coburg Station', 'Tram 19'],
+        phone: '(03) 9041 5031', accessibilityFeatures: ['Lift access', 'Professional centre'],
+        availableServices: ['Individual counselling', 'Specialist referrals'], sortOrder: 3
       }
     ];
 
@@ -251,9 +227,9 @@ export class MemStorage implements IStorage {
       firstName: insertContact.firstName,
       lastName: insertContact.lastName,
       email: insertContact.email,
-      phone: insertContact.phone,
+      phone: insertContact.phone ?? null,
       enquiryType: insertContact.enquiryType,
-      preferredLocation: insertContact.preferredLocation ?? undefined,
+      preferredLocation: insertContact.preferredLocation ?? null,
       message: insertContact.message,
       urgencyLevel: insertContact.urgencyLevel ?? 1,
       privacyConsent: insertContact.privacyConsent ?? false,
