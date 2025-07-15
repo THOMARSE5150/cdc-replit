@@ -1,38 +1,29 @@
 import { Router } from "express";
-import { sendContactConfirmation } from "../services/email.js";
+import { sendContactConfirmation } from "./email.js"; // CORRECTED import path
 
 const contactRoutes = Router();
 
-// POST /api/contact - handles form submission
 contactRoutes.post("/", async (req, res) => {
-  const { name, email, phone, enquiryType, preferredLocation, message } = req.body;
+  try {
+    const { name, email, message } = req.body;
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
 
-  console.log("Form submitted:", {
-    name,
-    email,
-    phone,
-    enquiryType,
-    preferredLocation,
-    message,
-  });
+    const [firstName = "", ...rest] = name.split(" ");
+    const lastName = rest.join(" ") || "(no last name)";
 
-  // Split name into first + last
-  const [firstName = "", ...rest] = name.split(" ");
-  const lastName = rest.join(" ") || "(no last name)";
+    const emailSent = await sendContactConfirmation(firstName, lastName, email, message);
 
-  // Send confirmation email
-  const emailSent = await sendContactConfirmation(firstName, lastName, email, message);
+    if (!emailSent) {
+      throw new Error("Failed to send confirmation email");
+    }
 
-  if (!emailSent) {
-    return res.status(500).json({ error: "Failed to send confirmation email" });
+    res.status(200).json({ message: "Message received and confirmation sent!" });
+  } catch (error) {
+    console.error("Contact form error:", error);
+    res.status(500).json({ error: "An internal error occurred." });
   }
-
-  res.status(200).json({ message: "Message received and confirmation sent!" });
-});
-
-// GET /api/contact/health - simple health check for Railway
-contactRoutes.get("/health", (_req, res) => {
-  res.status(200).json({ status: "ok" });
 });
 
 export default contactRoutes;

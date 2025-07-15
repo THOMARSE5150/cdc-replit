@@ -1,57 +1,26 @@
 import { MailService } from '@sendgrid/mail';
-import { type Booking } from './storage.js'; // CORRECTED to a flat ./ path
 
-// Initialize SendGrid with the API key
 const mailService = new MailService();
 const apiKey = process.env.SENDGRID_API_KEY;
 
-// Set the API key if it exists and clean up format if needed
 if (apiKey) {
-  let cleanApiKey = apiKey;
-  if (apiKey.includes('=')) {
-    cleanApiKey = apiKey.split('=')[1].trim();
-  }
-  mailService.setApiKey(cleanApiKey);
-  console.log('SendGrid API key set successfully');
+  mailService.setApiKey(apiKey);
+  console.log('SendGrid API key set successfully.');
 } else {
   console.warn('SENDGRID_API_KEY is not set. Email functionality will be disabled.');
 }
 
-interface EmailParams {
-  to: string;
-  from: string;
-  subject: string;
-  text?: string;
-  html?: string;
-}
-
-export async function sendEmail(params: EmailParams): Promise<boolean> {
-  if (!apiKey) {
-    console.warn('Email not sent to ' + params.to + ' - No SendGrid API key');
-    return false;
-  }
-
-  try {
-    await mailService.send({
-      to: params.to,
-      from: params.from,
-      subject: params.subject,
-      text: params.text || '',
-      html: params.html || '',
-    });
-    console.log(`Email sent successfully to ${params.to}`);
-    return true;
-  } catch (error) {
-    console.error('SendGrid email error:', error);
-    return false;
-  }
-}
-
 export async function sendContactConfirmation(firstName: string, lastName: string, email: string, message: string): Promise<boolean> {
-  const subject = 'We\'ve Received Your Message - Celia Dunsmore Counselling';
-  const fromEmail = 'hello@celiadunsmorecounselling.com.au';
+  if (!apiKey) {
+    console.error('Cannot send email, no API key configured.');
+    return false;
+  }
 
-  const html = `
+  const subject = `We've Received Your Message - Celia Dunsmore Counselling`;
+  const fromEmail = 'hello@celiadunsmorecounselling.com.au';
+  
+  // Email to the person who submitted the form
+  const clientHtml = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
       <div style="text-align: center; margin-bottom: 20px;">
         <h1 style="color: #4EB3A5; margin: 0;">Thank You for Contacting Us</h1>
@@ -74,152 +43,24 @@ export async function sendContactConfirmation(firstName: string, lastName: strin
       </div>
     </div>
   `;
+  const clientText = `Thank You for Contacting Us...`; // A plain text version of the above
 
-  const text = `
-    Thank You for Contacting Us - Celia Dunsmore Counselling
+  // Notification email to the admin
+  const adminSubject = `New Contact Submission from ${firstName} ${lastName}`;
+  const adminEmail = 'hello@celiadunsmorecounselling.com.au'; // <<< IMPORTANT: CHANGE THIS
+  const adminText = `Name: ${firstName} ${lastName}\nEmail: ${email}\nMessage: ${message}`;
+  
+  try {
+    // Send email to client
+    await mailService.send({ to: email, from: fromEmail, subject: subject, html: clientHtml, text: clientText });
+    
+    // Send notification to admin
+    await mailService.send({ to: adminEmail, from: fromEmail, subject: adminSubject, text: adminText });
 
-    Dear ${firstName} ${lastName},
-
-    Thank you for reaching out. I have received your message and will get back to you as soon as possible, usually within 24-48 hours during business days.
-
-    Your message:
-    ${message}
-
-    What happens next?
-    I will review your message and contact you via email or phone. If your matter is urgent, please call me directly at (03) 9123 4567.
-
-    If you have any questions, please contact us at:
-    Email: hello@celiadunsmorecounselling.com.au | Phone: (03) 9123 4567
-
-    © ${new Date().getFullYear()} Celia Dunsmore Counselling. All rights reserved.
-  `;
-
-  return sendEmail({
-    to: email,
-    from: fromEmail,
-    subject,
-    html,
-    text
-  });
-}
-
-export async function sendBookingConfirmation(booking: Booking): Promise<boolean> {
-  const client = typeof booking.client === 'string'
-    ? JSON.parse(booking.client as string)
-    : booking.client;
-
-  const service = typeof booking.service === 'string'
-    ? JSON.parse(booking.service as string)
-    : booking.service;
-
-  const formatDate = (dateString: string): string =>
-    new Date(dateString).toLocaleDateString('en-AU', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-
-  const subject = 'Your Appointment Confirmation with Celia Dunsmore Counselling';
-  const fromEmail = 'hello@celiadunsmorecounselling.com.au';
-
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
-      <div style="text-align: center; margin-bottom: 20px;">
-        <h1 style="color: #4EB3A5; margin: 0;">Appointment Confirmation</h1>
-        <p style="font-size: 18px; color: #666;">Celia Dunsmore Counselling</p>
-      </div>
-      <div style="background-color: #f7f7f7; padding: 20px; border-radius: 5px; margin-bottom: 20px;">
-        <p>Dear ${client.firstName} ${client.lastName},</p>
-        <p>Your appointment has been confirmed. Please find the details below:</p>
-        <div style="margin: 20px 0; padding: 15px; background-color: #ffffff; border-left: 4px solid #4EB3A5; border-radius: 3px;">
-          <p><strong>Service:</strong> ${service.name}</p>
-          <p><strong>Date:</strong> ${formatDate(booking.date)}</p>
-          <p><strong>Time:</strong> ${booking.time}</p>
-          <p><strong>Duration:</strong> ${service.duration} minutes</p>
-        </div>
-        <h3 style="color: #4EB3A5;">Location</h3>
-        <p>178 Scotchman Rd, Bellingen NSW 2454</p>
-        <h3 style="color: #4EB3A5;">Preparation</h3>
-        <p>Please arrive 5-10 minutes before your appointment. If this is your first session, please bring any relevant referral letters, Medicare card, and health insurance information if applicable.</p>
-        <h3 style="color: #4EB3A5;">Cancellation Policy</h3>
-        <p>If you need to reschedule or cancel your appointment, please provide at least 24 hours notice to avoid a cancellation fee.</p>
-      </div>
-      <div style="text-align: center; font-size: 14px; color: #888; margin-top: 30px;">
-        <p>If you have any questions, please contact us at:</p>
-        <p>Email: hello@celiadunsmorecounselling.com.au | Phone: 0422 804 479</p>
-        <p>© ${new Date().getFullYear()} Celia Dunsmore Counselling. All rights reserved.</p>
-      </div>
-    </div>
-  `;
-
-  const text = `
-    Appointment Confirmation - Celia Dunsmore Counselling
-
-    Dear ${client.firstName} ${client.lastName},
-
-    Your appointment has been confirmed. Please find the details below:
-
-    Service: ${service.name}
-    Date: ${formatDate(booking.date)}
-    Time: ${booking.time}
-    Duration: ${service.duration} minutes
-
-    Location: 178 Scotchman Rd, Bellingen NSW 2454
-
-    Preparation:
-    Please arrive 5-10 minutes before your appointment. If this is your first session, please bring any relevant referral letters, Medicare card, and health insurance information if applicable.
-
-    Cancellation Policy:
-    If you need to reschedule or cancel your appointment, please provide at least 24 hours notice to avoid a cancellation fee.
-
-    If you have any questions, please contact us at:
-    Email: hello@celiadunsmorecounselling.com.au | Phone: 0422 804 479
-
-    © ${new Date().getFullYear()} Celia Dunsmore Counselling. All rights reserved.
-  `;
-
-  return sendEmail({
-    to: client.email,
-    from: fromEmail,
-    subject,
-    html,
-    text
-  });
-}
-
-export async function sendAdminNotification(firstName: string, lastName:string, email: string, message: string): Promise<boolean> {
-  const subject = `New Contact Submission from ${firstName} ${lastName}`;
-  const fromEmail = 'hello@celiadunsmorecounselling.com.au';
-  const adminEmail = 'hello@celiadunsmorecounselling.com.au';
-
-  const html = `
-    <div style="font-family: Arial, sans-serif; padding: 20px;">
-      <h2>New Contact Form Submission</h2>
-      <p><strong>Name:</strong> ${firstName} ${lastName}</p>
-      <p><strong>Email:</strong> ${email}</p>
-      <p><strong>Message:</strong></p>
-      <div style="background-color: #f2f2f2; padding: 10px; border-radius: 5px;">
-        ${message}
-      </div>
-    </div>
-  `;
-
-  const text = `
-    New Contact Form Submission
-
-    Name: ${firstName} ${lastName}
-    Email: ${email}
-
-    Message:
-    ${message}
-  `;
-
-  return sendEmail({
-    to: adminEmail,
-    from: fromEmail,
-    subject,
-    html,
-    text
-  });
+    console.log(`Contact emails sent for ${email}`);
+    return true;
+  } catch (error) {
+    console.error('SendGrid email error:', error);
+    return false;
+  }
 }
