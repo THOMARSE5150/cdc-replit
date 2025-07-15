@@ -202,7 +202,7 @@ export class MemStorage implements IStorage {
         id,
         ...validatedData,
         createdAt: now,
-        updatedAt: now
+        updatedAt: now,
       };
       this.practiceLocations.set(id, location);
     });
@@ -247,7 +247,7 @@ export class MemStorage implements IStorage {
   }
 
   async getActivePracticeLocations(): Promise<PracticeLocation[]> {
-    return Array.from(this.practiceLocations.values()).filter(loc => loc.isActive).sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999));
+    return Array.from(this.practiceLocations.values()).filter(loc => loc.isActive === true).sort((a, b) => (a.sortOrder ?? 999) - (b.sortOrder ?? 999));
   }
 
   async getPracticeLocation(id: number): Promise<PracticeLocation | undefined> { return this.practiceLocations.get(id); }
@@ -264,7 +264,7 @@ export class MemStorage implements IStorage {
       id,
       ...validatedData,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
     };
     this.practiceLocations.set(id, location);
     return location;

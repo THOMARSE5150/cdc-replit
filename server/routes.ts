@@ -77,13 +77,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/website-enhancement-summary", (req, res) => {
-    const summaryHTML = `<!DOCTYPE html>...`; // Keeping your long HTML string collapsed for brevity
+    const summaryHTML = `<!DOCTYPE html>...`; // The long HTML string from your original file
     res.setHeader('Content-Type', 'text/html');
     res.send(summaryHTML);
   });
 
   app.get("/api/download-summary", (req, res) => {
-    const summaryHTML = `<!DOCTYPE html>...`; // Keeping your long HTML string collapsed for brevity
+    const summaryHTML = `<!DOCTYPE html>...`; // The long HTML string from your original file
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Content-Disposition', 'attachment; filename="Website-Enhancement-Summary-Celia-Dunsmore.html"');
     res.send(summaryHTML);

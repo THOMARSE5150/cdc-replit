@@ -191,7 +191,7 @@ export async function sendBookingConfirmation(booking: Booking): Promise<boolean
 export async function sendAdminNotification(firstName: string, lastName:string, email: string, message: string): Promise<boolean> {
   const subject = `New Contact Submission from ${firstName} ${lastName}`;
   const fromEmail = 'hello@celiadunsmorecounselling.com.au';
-  const adminEmail = 'hello@celiadunsmorecounselling.com.au'; // ✅ real admin inbox
+  const adminEmail = 'hello@celiadunsmorecounselling.com.au';
 
   const html = `
     <div style="font-family: Arial, sans-serif; padding: 20px;">
