@@ -9,7 +9,7 @@ import {
   type InsertGoogleTokens,
   type PracticeLocation,
   type InsertPracticeLocation
-} from "../shared/schema.js"; // CORRECTED to relative path
+} from './shared/schema.js'; // CORRECTED to co-located path
 
 // Helper function to create a valid PracticeLocation from raw data, providing defaults
 // This function fixes the type errors related to 'hours' and 'features'
