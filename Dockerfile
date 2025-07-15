@@ -1,28 +1,26 @@
-# Stage 1 — Builder
+# Stage 1 - Builder
 FROM node:18 AS builder
-
 WORKDIR /app
 
-COPY . .
-
-# Install all deps for both client and server
+# Copy only package files first to leverage Docker cache
+COPY package.json package-lock.json ./
 RUN npm install
 
-# Build Vite frontend
-RUN npm run build
+# Copy the rest of the application source code
+COPY . .
 
-# Compile TypeScript backend (server)
-RUN npx tsc -p tsconfig.server.json
+# Compile TypeScript server
+RUN npm run build:server
 
-# Stage 2 — Runtime image
+# Stage 2 - Runtime image
 FROM node:18-slim
-
 WORKDIR /app
 
-# Only bring in necessary files
+# Copy only necessary files from the builder stage
 COPY --from=builder /app/package.json .
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/client/dist ./client/dist
 
 # Use Railway's provided port
 ENV PORT=8080

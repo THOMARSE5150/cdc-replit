@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { sendContactConfirmation } from "./email.js"; // CORRECTED import path
+import { sendContactConfirmation } from "./email.js";
 
 const contactRoutes = Router();
 
@@ -24,6 +24,11 @@ contactRoutes.post("/", async (req, res) => {
     console.error("Contact form error:", error);
     res.status(500).json({ error: "An internal error occurred." });
   }
+});
+
+// GET /api/contact/health - simple health check for Railway
+contactRoutes.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok" });
 });
 
 export default contactRoutes;
