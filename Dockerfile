@@ -1,29 +1,35 @@
-# Stage 1 - Builder
+# Stage 1: Builder
 FROM node:18 AS builder
 WORKDIR /app
 
-# Copy only package files first to leverage Docker cache
-COPY package.json package-lock.json ./
+# Install root dependencies (if any)
+COPY package*.json ./
 RUN npm install
 
-# Copy the rest of the application source code
-COPY . .
+# Build frontend
+COPY client ./client
+RUN cd client && npm install && npm run build
 
-# Compile TypeScript server
-RUN npm run build:server
+# Build backend
+COPY server ./server
+RUN cd server && npm install && npm run build
 
-# Stage 2 - Runtime image
+# Stage 2: Runtime image
 FROM node:18-slim
 WORKDIR /app
 
-# Copy only necessary files from the builder stage
-COPY --from=builder /app/package.json .
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/client/dist ./client/dist
+# Copy only necessary files from builder
+COPY --from=builder /app/server/package.json ./server/package.json
+COPY --from=builder /app/server/node_modules ./server/node_modules
+COPY --from=builder /app/server/dist ./server/dist
 
-# Use Railway's provided port
+# Copy built frontend into correct location for static serving
+COPY --from=builder /app/client/dist ./server/dist/client/dist
+
+# Set environment variables
 ENV PORT=8080
 
-# Start compiled server
-CMD ["node", "dist/server/index.js"]
+EXPOSE 8080
+
+# Start server
+CMD ["node", "server/dist/index.js"]
